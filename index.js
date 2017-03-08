@@ -13,6 +13,18 @@
         D += 1;
         document.getElementById("D").innerHTML = D;
     };
+	    function minusA() {
+        A -= 1;
+        document.getElementById("A").innerHTML = A;
+    };
+    function minusB() {
+        B -= 1;
+        document.getElementById("B").innerHTML = B;
+    };
+    function minusD() {
+        D -= 1;
+        document.getElementById("D").innerHTML = D;
+    };
 function passwordLoad() {
 var password;
 var pass1="cooldiego123"; //Diego
