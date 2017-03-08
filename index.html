@@ -2,9 +2,10 @@
 <html>
   <head>
   <title>Sign in - Accounts</title>
-  	<link rel="stylesheet" type="text/css" href="index.css" />
+  	<link rel="stylesheet" type="text/css" href="index.css"/>
+	<script language="javascript" src="index.js"></script>
 </head>
-  <body>
+  <body onLoad="passwordLoad()">
 <ul>
   <li><a href="Points.html">Add/Minus Points</a></li>
   <li><a href="table.html">View Debt Table</a></li>
@@ -17,18 +18,5 @@
   <br>
   <br>
 <p align="center"> Welcome Back! </p>
-<script>
-var password;
-var pass1="bus.password";
-password=prompt('Enter Password To View Page','');
-if (password==pass1) {
-alert('Welcome!');
-}
-else
-{
-alert('Incorrect password');
-window.location="https://www.google.ae/search?q=incorrect!&safe=strict&espv=2&source=lnms&tbm=isch&sa=X&ved=0ahUKEwiQ_M72k7jSAhUlLMAKHc-JCOcQ_AUICCgB&biw=1366&bih=700#imgrc=pLVXH3j1FgecWM:";
-}
-</script>
   </body>
 </html>
