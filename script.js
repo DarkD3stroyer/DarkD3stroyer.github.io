@@ -1,295 +1,98 @@
-var board,
-    game = new Chess();
+function Class(subject,teacher, room) {
+	this.Subject = subject;
+	this.Teacher = teacher;
+	this.Room = room;
+}
+function geoTeacherCheck() {
+	isMonOrTue = (dayOfWeek == "Monday" || dayOfWeek == "Tuesday");
+	geo.Teacher = (isMonOrTue ? "Mrs. MacNamara" : "Mrs. Kemp");
+}
+function getWeekOfYear() {
+  var date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+  var week1 = new Date(date.getFullYear(), 0, 4);
+  return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+}
 
-/*The "AI" part starts here */
+var maths = new Class("Maths", "Mr. Baird", "no idea");
+var physics = new Class("Physics", "no idea", "no idea");
+var cs = new Class("Computing Science", "no idea", "no idea");
+var eng = new Class("English", "no idea", "no idea");
+var geo = new Class("Geography", (isMonOrTue ? "Mrs. MacNamara" : "Mrs. Kemp"), "idk");
+var pe = new Class("Physical Education", "no idea", "no idea");
+var pse = new Class("Personal & Social Education", "no idea", "no idea");
+var achievement = new Class("Achievement School", "no idea", "no idea");
 
-var minimaxRoot =function(depth, game, isMaximisingPlayer) {
+var timeTable = [ 
+	[physics, physics, cs, maths, geo, eng, pse],     //monday     1
+	[geo, geo, physics, cs, achievement, maths, eng], //tuesday    2
+	[maths, maths, eng, eng, physics, cs, geo],       //wednesday  3
+	[cs, cs, pe, maths, eng, geo, physics],           //thursday   4
+	[geo, eng, maths, cs, physics]                    //friday     5
+]; //[rows][columns] // [days][periods]
 
-    var newGameMoves = game.ugly_moves();
-    var bestMove = -9999;
-    var bestMoveFound;
+console.table(timeTable); //displays table in console
+var isMonOrTue;
+var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var date = new Date();
+//date.setDate(date.getDate() + 1) // to get tmrws timetable
+var weeksOfSchool = (getWeekOfYear() - 34) /* + 1 */; // to get next weeks timetable
+var dayOfWeek = days[date.getDay()];
+var startingLesson
+function getLessons(period) { //call with the period of the lesson (1,2,3) to return based on startingLesson
+    startingLesson = (Math.trunc(weeksOfSchool*(dayOfWeek=="Friday" ? 2 : 3))) % (dayOfWeek=="Friday" ? 5 : 7);
+	var temp;
+		if (period == 1) {temp = startingLesson};
+		if (period == 2) {
+			if (startingLesson >= 6) {
+				temp = 0
+			} else {
+				temp = startingLesson + 1;
+			}
+		}
+		if (period == 3) {
+			if (startingLesson >= 5) {
+				temp = 1
+			} else {
+				temp = startingLesson + 2;
+			}
+		}
+		
+	return temp;
+}
+function populate(){
+	geoTeacherCheck();
+	var todaysLessons = [timeTable[date.getDay()-1][getLessons(1)],timeTable[date.getDay()-1][getLessons(2)], timeTable[date.getDay()-1][getLessons(3)]]
+	if (dayOfWeek=="Friday") {
+		todaysLessons[2].Teacher = "";
+		todaysLessons[2].Room = "";
+		todaysLessons[2].Subject = "No Lesson, Go Home"
+	};
+	isMonOrTue = (dayOfWeek == "Monday" || dayOfWeek == "Tuesday"); //is it a monday or tuesday? (for geo teacher)
 
-    for(var i = 0; i < newGameMoves.length; i++) {
-        var newGameMove = newGameMoves[i]
-        game.ugly_move(newGameMove);
-        var value = minimax(depth - 1, game, -10000, 10000, !isMaximisingPlayer);
-        game.undo();
-        if(value >= bestMove) {
-            bestMove = value;
-            bestMoveFound = newGameMove;
-        }
-    }
-    return bestMoveFound;
-};
+	document.getElementById("date").innerHTML=dayOfWeek;
 
-var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
-    positionCount++;
-    if (depth === 0) {
-        return -evaluateBoard(game.board());
-    }
+	document.getElementById("p1Name").innerHTML=todaysLessons[0].Subject;
+	document.getElementById("p1Teacher").innerHTML=todaysLessons[0].Teacher;
+	document.getElementById("p1Room").innerHTML=todaysLessons[0].Room;
 
-    var newGameMoves = game.ugly_moves();
+	document.getElementById("p2Name").innerHTML=todaysLessons[1].Subject;
+	document.getElementById("p2Teacher").innerHTML=todaysLessons[1].Teacher;
+	document.getElementById("p2Room").innerHTML=todaysLessons[1].Room;
 
-    if (isMaximisingPlayer) {
-        var bestMove = -9999;
-        for (var i = 0; i < newGameMoves.length; i++) {
-            game.ugly_move(newGameMoves[i]);
-            bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-            game.undo();
-            alpha = Math.max(alpha, bestMove);
-            if (beta <= alpha) {
-                return bestMove;
-            }
-        }
-        return bestMove;
-    } else {
-        var bestMove = 9999;
-        for (var i = 0; i < newGameMoves.length; i++) {
-            game.ugly_move(newGameMoves[i]);
-            bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-            game.undo();
-            beta = Math.min(beta, bestMove);
-            if (beta <= alpha) {
-                return bestMove;
-            }
-        }
-        return bestMove;
-    }
-};
-
-var evaluateBoard = function (board) {
-    var totalEvaluation = 0;
-    for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-            totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i ,j);
-        }
-    }
-    return totalEvaluation;
-};
-
-var reverseArray = function(array) {
-    return array.slice().reverse();
-};
-
-var pawnEvalWhite =
-    [
-        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-        [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
-        [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
-        [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
-        [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
-        [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
-        [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
-        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
-    ];
-
-var pawnEvalBlack = reverseArray(pawnEvalWhite);
-
-var knightEval =
-    [
-        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
-        [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
-        [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
-        [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
-        [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
-        [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
-        [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
-        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
-    ];
-
-var bishopEvalWhite = [
-    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
-    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
-    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
-    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
-    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
-    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
-];
-
-var bishopEvalBlack = reverseArray(bishopEvalWhite);
-
-var rookEvalWhite = [
-    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-    [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
-];
-
-var rookEvalBlack = reverseArray(rookEvalWhite);
-
-var evalQueen = [
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
-];
-
-var kingEvalWhite = [
-
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
-    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
-    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
-    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
-];
-
-var kingEvalBlack = reverseArray(kingEvalWhite);
-
-
-
-
-var getPieceValue = function (piece, x, y) {
-    if (piece === null) {
-        return 0;
-    }
-    var getAbsoluteValue = function (piece, isWhite, x ,y) {
-        if (piece.type === 'p') {
-            return 10 + ( isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x] );
-        } else if (piece.type === 'r') {
-            return 50 + ( isWhite ? rookEvalWhite[y][x] : rookEvalBlack[y][x] );
-        } else if (piece.type === 'n') {
-            return 30 + knightEval[y][x];
-        } else if (piece.type === 'b') {
-            return 30 + ( isWhite ? bishopEvalWhite[y][x] : bishopEvalBlack[y][x] );
-        } else if (piece.type === 'q') {
-            return 90 + evalQueen[y][x];
-        } else if (piece.type === 'k') {
-            return 900 + ( isWhite ? kingEvalWhite[y][x] : kingEvalBlack[y][x] );
-        }
-        throw "Unknown piece type: " + piece.type;
-    };
-
-    var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x ,y);
-    return piece.color === 'w' ? absoluteValue : -absoluteValue;
-};
-
-
-/* board visualization and games state handling */
-
-var onDragStart = function (source, piece, position, orientation) {
-    if (game.in_checkmate() === true || game.in_draw() === true ||
-        piece.search(/^b/) !== -1) {
-        return false;
-    }
-};
-
-var makeBestMove = function () {
-    var bestMove = getBestMove(game);
-    game.ugly_move(bestMove);
-    board.position(game.fen());
-    renderMoveHistory(game.history());
-    if (game.game_over()) {
-        alert('Game over');
-    }
-};
-
-
-var positionCount;
-var getBestMove = function (game) {
-    if (game.game_over()) {
-        alert('Game over');
-    }
-
-    positionCount = 0;
-    var depth = parseInt($('#search-depth').find(':selected').text());
-
-    var d = new Date().getTime();
-    var bestMove = minimaxRoot(depth, game, true);
-    var d2 = new Date().getTime();
-    var moveTime = (d2 - d);
-    var positionsPerS = ( positionCount * 1000 / moveTime);
-
-    $('#position-count').text(positionCount);
-    $('#time').text(moveTime/1000 + 's');
-    $('#positions-per-s').text(positionsPerS);
-    return bestMove;
-};
-
-var renderMoveHistory = function (moves) {
-    var historyElement = $('#move-history').empty();
-    historyElement.empty();
-    for (var i = 0; i < moves.length; i = i + 2) {
-        historyElement.append('<span>' + moves[i] + ' ' + ( moves[i + 1] ? moves[i + 1] : ' ') + '</span><br>')
-    }
-    historyElement.scrollTop(historyElement[0].scrollHeight);
-
-};
-
-var onDrop = function (source, target) {
-
-    var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-    });
-
-    removeGreySquares();
-    if (move === null) {
-        return 'snapback';
-    }
-
-    renderMoveHistory(game.history());
-    window.setTimeout(makeBestMove, 250);
-};
-
-var onSnapEnd = function () {
-    board.position(game.fen());
-};
-
-var onMouseoverSquare = function(square, piece) {
-    var moves = game.moves({
-        square: square,
-        verbose: true
-    });
-
-    if (moves.length === 0) return;
-
-    greySquare(square);
-
-    for (var i = 0; i < moves.length; i++) {
-        greySquare(moves[i].to);
-    }
-};
-
-var onMouseoutSquare = function(square, piece) {
-    removeGreySquares();
-};
-
-var removeGreySquares = function() {
-    $('#board .square-55d63').css('background', '');
-};
-
-var greySquare = function(square) {
-    var squareEl = $('#board .square-' + square);
-
-    var background = '#a9a9a9';
-    if (squareEl.hasClass('black-3c85d') === true) {
-        background = '#696969';
-    }
-
-    squareEl.css('background', background);
-};
-
-var cfg = {
-    draggable: true,
-    position: 'start',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onMouseoutSquare: onMouseoutSquare,
-    onMouseoverSquare: onMouseoverSquare,
-    onSnapEnd: onSnapEnd
-};
-board = ChessBoard('board', cfg);
+	document.getElementById("p3Name").innerHTML=todaysLessons[2].Subject;
+	document.getElementById("p3Teacher").innerHTML=todaysLessons[2].Teacher;
+	document.getElementById("p3Room").innerHTML=todaysLessons[2].Room;
+}
+function timeSkip(daysToSkip) {
+	date.setDate(date.getDate() + daysToSkip);
+	dayOfWeek = days[date.getDay()];
+	populate();
+}
+function weekSkip(weeksToSkip) {
+	weeksOfSchool += weeksToSkip;
+	populate();
+}
+populate();
+// DISCLAIMER: absolute garbage code but works (kinda?) so shhhhh

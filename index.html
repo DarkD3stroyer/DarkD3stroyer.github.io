@@ -1,40 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="lib/chessboardjs/css/chessboard-0.3.0.css">
-    <link rel="stylesheet" href="style.css">
+	<title>Corona Timetable</title>
+	<link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
-<br /><br /><br /><br />
-<div id="board" class="board"></div>
-<div class="info">
-    Search depth:
-    <select id="search-depth">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3" selected>3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-    </select>
-
-    <br>
-    <span>Positions evaluated: <span id="position-count"></span></span>
-    <br>
-    <span>Time: <span id="time"></span></span>
-    <br>
-    <span>Positions/s: <span id="positions-per-s"></span> </span>
-    <br>
-    <br>
-    <div id="move-history" class="move-history">
-    </div>
-</div>
-<script src="lib/jquery/jquery-3.2.1.min.js"></script>
-<script src="lib/chessboardjs/js/chess.js"></script>
-<script src="lib/chessboardjs/js/chessboard-0.3.0.js"></script>
-<script src="script.js"></script>
-<script>
-
-</script>
+	<table id="t01">
+	  <tr>
+		<th></th>
+		<th>Period 1 <br> 09:05 - 10:50</th> 
+		<th>Break <br> 10:50 - 11:05</th> 
+		<th>Period 2 <br> 11:05 - 12:55</th>
+		<th>Lunch <br> 12:55 - 13:40</th> 
+		<th>Period 3 <br> 13:40 - 15:25</th>
+		<th>Tutor Time <br> 15:25 - 15:40</th> 
+	  </tr>
+	  <tr>
+		<td><span id="date"></span></td>
+		<td>
+			<span id="p1Name"></span> </br>
+			<span id="p1Teacher"></span> </br>
+			<span id="p1Room"></span> </br>
+		</td>
+		<td>Break</td>
+		<td>
+			<span id="p2Name"></span> </br>
+			<span id="p2Teacher"></span> </br>
+			<span id="p2Room"></span> </br>
+		</td>		
+		<td>Lunch</td>
+		<td>
+			<span id="p3Name"></span> </br>
+			<span id="p3Teacher"></span> </br>
+			<span id="p3Room"></span> </br>
+		</td>		
+		<td>Tutor Time</td>
+	  </tr>
+	</table>
+	<button onclick="timeSkip(1)">See Timetable For Next Day This Week</button>
+	<button onclick="weekSkip(1)">See Timetable For Today Next Week</button>
+	
+<script language="javascript" src="script.js"></script>
 </body>
 </html>
